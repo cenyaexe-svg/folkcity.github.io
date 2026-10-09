@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>FOLK-CITY</title>
+<style>
+:root{
+  --black:#090a08; --grime:#161a12; --blood:#a3141a; --yellow:#e8c41c;
+  --tape:#9fb58a; --white:#d9d6c8; --dim:#6f7a62;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--white);
+  font-family:"Courier New",Courier,monospace}
+body{background:
+  radial-gradient(ellipse 60% 70% at 50% -10%,rgba(159,181,138,.22),transparent 70%),
+  linear-gradient(180deg,#0d100b,var(--black) 60%,#14080a)}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+#blood{opacity:.55}
+#noise{image-rendering:pixelated;opacity:.13;mix-blend-mode:screen;pointer-events:none}
+.scan{position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px)}
+.vig{position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.85) 100%)}
+body{animation:flick 6s infinite steps(1)}
+@keyframes flick{0%,96%{filter:none}97%{filter:brightness(1.25)}98%{filter:brightness(.85)}99%{filter:none}}
+
+.wrap{position:fixed;inset:0;padding:5vh 5vw;display:flex;flex-direction:column;justify-content:space-between}
+.frame{position:fixed;inset:3vh 3vw;pointer-events:none;
+  background:
+   linear-gradient(var(--tape),var(--tape)) top left/28px 2px no-repeat,
+   linear-gradient(var(--tape),var(--tape)) top left/2px 28px no-repeat,
+   linear-gradient(var(--tape),var(--tape)) top right/28px 2px no-repeat,
+   linear-gradient(var(--tape),var(--tape)) top right/2px 28px no-repeat,
+   linear-gradient(var(--tape),var(--tape)) bottom left/28px 2px no-repeat,
+   linear-gradient(var(--tape),var(--tape)) bottom left/2px 28px no-repeat,
+   linear-gradient(var(--tape),var(--tape)) bottom right/28px 2px no-repeat,
+   linear-gradient(var(--tape),var(--tape)) bottom right/2px 28px no-repeat;opacity:.7}
+
+.top{display:flex;justify-content:space-between;font-size:clamp(14px,1.5vw,20px);color:var(--tape);
+  text-shadow:0 0 6px rgba(159,181,138,.5)}
+.rec{display:flex;align-items:center;gap:10px}
+.rec i{width:14px;height:14px;border-radius:50%;background:var(--blood);box-shadow:0 0 10px var(--blood);
+  animation:blink 1.2s infinite steps(1)}
+@keyframes blink{50%{opacity:0}}
+
+.hero{margin-top:-4vh}
+.title{position:relative;display:inline-block;font-family:Impact,"Arial Black","Arial Narrow",sans-serif;
+  font-weight:900;font-size:clamp(56px,12vw,170px);line-height:.95;letter-spacing:.02em;color:var(--blood);
+  -webkit-text-stroke:2px var(--white);paint-order:stroke fill;
+  text-shadow:6px 6px 0 rgba(0,0,0,.7),0 0 30px rgba(163,20,26,.5);transform:rotate(-1.5deg)}
+.title::before,.title::after{content:attr(data-text);position:absolute;left:0;top:0;opacity:0;pointer-events:none}
+.title::before{color:var(--yellow);-webkit-text-stroke:0;animation:g1 5s infinite steps(1)}
+.title::after{color:#2fd0c8;-webkit-text-stroke:0;animation:g2 5s infinite steps(1)}
+@keyframes g1{0%,90%{opacity:0}91%{opacity:.9;transform:translate(-8px,0);clip-path:inset(8% 0 58% 0)}
+  93%{transform:translate(6px,0);clip-path:inset(62% 0 8% 0)}95%,100%{opacity:0}}
+@keyframes g2{0%,91%{opacity:0}92%{opacity:.8;transform:translate(8px,0);clip-path:inset(40% 0 30% 0)}
+  94%{transform:translate(-6px,0);clip-path:inset(5% 0 80% 0)}96%,100%{opacity:0}}
+.tag{margin-top:2.2vh;display:inline-block;background:var(--yellow);color:var(--black);font-weight:700;
+  font-size:clamp(14px,1.7vw,24px);padding:4px 14px;transform:rotate(-1.5deg);letter-spacing:.06em}
+.info{margin-top:3vh;font-size:clamp(14px,1.4vw,19px);line-height:1.8;color:var(--tape)}
+.info b{color:var(--white);font-weight:700}
+.info span{color:var(--dim)}
+
+.bottom{width:100%}
+.status{display:flex;justify-content:space-between;gap:20px;font-size:clamp(13px,1.3vw,17px);margin-bottom:10px;color:var(--tape)}
+#file{color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%;text-align:right}
+.tape{position:relative;height:18px;border:2px solid var(--tape);background:rgba(0,0,0,.6)}
+#bar{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--blood);
+  box-shadow:0 0 14px rgba(163,20,26,.8);transition:width .4s steps(12)}
+.tape::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(9,10,8,.9) calc(10% - 2px) 10%)}
+.meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px;gap:20px}
+#tip{font-size:clamp(13px,1.3vw,17px);color:var(--white);max-width:70%;transition:opacity .4s}
+#pct{font-family:Impact,"Arial Black",sans-serif;font-size:clamp(32px,4.5vw,60px);color:var(--yellow);
+  line-height:1;text-shadow:3px 3px 0 rgba(0,0,0,.7)}
+
+@media (max-width:760px){.hero{margin-top:0}#tip{max-width:60%}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="blood"></canvas>
+<canvas id="noise" width="200" height="120"></canvas>
+<div class="scan"></div><div class="vig"></div><div class="frame"></div>
+
+<div class="wrap">
+  <div>
+    <div class="top">
+      <div class="rec"><i></i><span>REC &nbsp; CAM 24</span></div>
+      <span id="clock">PLAY ▶</span>
+    </div>
+    <div class="hero">
+      <div class="title" id="name" data-text="FOLK-CITY">FOLK-CITY</div><br>
+      <div class="tag">Z-CITY</div>
+      <div class="info">
+        <div><span>Режим:</span> <b>Z-City</b></div>
+        <div><span>Слотов:</span> <b>24</b></div>
+        <div><span>Карта:</span> <b id="map">—</b></div>
+        <div><span>Discord:</span> <b id="discord"></b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="status"><span id="status">Подключение к серверу…</span><span id="file"></span></div>
+    <div class="tape"><div id="bar"></div></div>
+    <div class="meta"><span id="tip"></span><span id="pct">0%</span></div>
+  </div>
+</div>
+
+<script>
+/* ============ НАСТРОЙКИ ============ */
+var CONFIG = {
+  name: "FOLK-CITY",
+  discord: "discord.gg/CwFqXadERS",
+  tips: [
+    "Не вздумай стоять на месте. Они тебя уже видят.",
+    "Каждая улица — это чья-то последняя сцена.",
+    "Оружие любит тех, кто не колеблется.",
+    "Здесь никто не придёт на помощь. Привыкай.",
+    "Камера включена. Играй так, чтобы было что смотреть.",
+    "Хороший день, чтобы выйти из дома. Плохой — чтобы вернуться."
+  ]
+};
+/* ================================== */
+
+var $ = function(id){ return document.getElementById(id); };
+document.title = CONFIG.name;
+$("name").textContent = CONFIG.name; $("name").setAttribute("data-text", CONFIG.name);
+$("discord").textContent = CONFIG.discord;
+
+/* ---------- Прогресс ---------- */
+var total = 0, needed = 0, gmodActive = false;
+function render(){
+  var p = total > 0 ? Math.round((total - needed) / total * 100) : 0;
+  p = Math.max(0, Math.min(100, p));
+  $("bar").style.width = p + "%"; $("pct").textContent = p + "%";
+}
+
+/* ---------- Функции, которые вызывает Garry's Mod ---------- */
+function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode){
+  gmodActive = true;
+  if (servername){ $("name").textContent = servername; $("name").setAttribute("data-text", servername); document.title = servername; }
+  $("map").textContent = mapname || "—";
+}
+function SetFilesTotal(t){ gmodActive = true; total = Number(t) || 0; render(); }
+function SetFilesNeeded(n){ gmodActive = true; needed = Number(n) || 0; render(); }
+function SetStatusChanged(s){ gmodActive = true; $("status").textContent = s; }
+function DownloadingFile(f){ gmodActive = true; $("status").textContent = "Загрузка файлов"; $("file").textContent = f.split("/").pop(); }
+
+/* ---------- Подсказки ---------- */
+var tipIdx = 0;
+function nextTip(){
+  var el = $("tip"); el.style.opacity = 0;
+  setTimeout(function(){ el.textContent = CONFIG.tips[tipIdx++ % CONFIG.tips.length]; el.style.opacity = 1; }, 400);
+}
+nextTip(); setInterval(nextTip, 6000);
+
+/* ---------- Таймкод камеры ---------- */
+function pad(n){ return (n < 10 ? "0" : "") + n; }
+function tick(){
+  var d = new Date();
+  $("clock").textContent = "PLAY ▶  " + pad(d.getDate()) + "." + pad(d.getMonth()+1) + "." + d.getFullYear() +
+    "  " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+}
+tick(); setInterval(tick, 1000);
+
+/* ---------- Демо-режим (в браузере, не в игре) ---------- */
+setTimeout(function(){
+  if (gmodActive) return;
+  GameDetails(CONFIG.name, "", "gm_folkcity_night", 24, "", "Z-City");
+  total = 120; needed = 120;
+  var t = setInterval(function(){
+    needed = Math.max(0, needed - 1);
+    $("file").textContent = "materials/folk/file_" + (120 - needed) + ".vtf";
+    $("status").textContent = "Загрузка файлов"; render();
+    if (needed === 0){ clearInterval(t); $("status").textContent = "Отправка данных клиента…"; $("file").textContent = ""; }
+  }, 120);
+}, 1500);
+
+/* ---------- Шум VHS ---------- */
+var nc = $("noise"), nx = nc.getContext("2d"), img = nx.createImageData(nc.width, nc.height);
+function noise(){
+  var d = img.data;
+  for (var i = 0; i < d.length; i += 4){ var v = Math.random() * 255; d[i] = d[i+1] = d[i+2] = v; d[i+3] = 255; }
+  nx.putImageData(img, 0, 0);
+}
+noise(); setInterval(noise, 90);
+
+/* ---------- Брызги крови ---------- */
+var bc = $("blood"), bx = bc.getContext("2d");
+function splat(x, y, r){
+  bx.fillStyle = "rgba(110,8,12,.55)";
+  bx.beginPath(); bx.arc(x, y, r, 0, 7); bx.fill();
+  for (var i = 0; i < 22; i++){
+    var a = Math.random() * 6.28, dist = r * (1 + Math.random() * 2.6), s = Math.random() * r * .28 + 1.5;
+    bx.beginPath(); bx.arc(x + Math.cos(a) * dist, y + Math.sin(a) * dist, s, 0, 7); bx.fill();
+  }
+}
+function paintBlood(){
+  bc.width = innerWidth; bc.height = innerHeight; bx.clearRect(0, 0, bc.width, bc.height);
+  var W = bc.width, H = bc.height;
+  splat(W * .93, H * .2, W * .035); splat(W * .70, H * .06, W * .02);
+  splat(W * .06, H * .62, W * .028); splat(W * .84, H * .55, W * .045);
+  splat(W * .45, H * .93, W * .02);
+}
+paintBlood(); addEventListener("resize", paintBlood);
+</script>
+</body>
+</html>
